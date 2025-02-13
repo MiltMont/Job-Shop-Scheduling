@@ -2,7 +2,6 @@
 #define JOB_SHOP_INSTANCE_H
 
 #include <cstdint>
-#include <string>
 #include <vector>
 
 class Operation {

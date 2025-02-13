@@ -1,4 +1,4 @@
-#include "solution.h"
+#include "solution.hpp"
 #include <climits>
 #include <cstdio>
 #include <cstdlib>

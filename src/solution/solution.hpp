@@ -1,7 +1,7 @@
 #ifndef PERMUTATION_MACHINES_SOLUTION_H
 #define PERMUTATION_MACHINES_SOLUTION_H
 
-#include "instance.cpp"
+#include "../problem/instance.hpp"
 
 class Solution {
 public:

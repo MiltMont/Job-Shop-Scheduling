@@ -1,4 +1,4 @@
-#include "instance.h"
+#include "instance.hpp"
 #include <cstdint>
 #include <cstdio>
 #include <cstdlib>
