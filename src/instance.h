@@ -1,3 +1,6 @@
+#ifndef JOB_SHOP_INSTANCE_H
+#define JOB_SHOP_INSTANCE_H
+
 #include <cstdint>
 #include <string>
 #include <vector>
@@ -33,3 +36,4 @@ public:
 
   void display();
 };
+#endif // !JOB_SHOP_INSTANCE_H
