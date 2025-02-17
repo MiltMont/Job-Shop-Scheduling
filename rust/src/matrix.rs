@@ -1,7 +1,7 @@
 use std::fmt::Debug;
 
 pub struct Matrix<T: Default + Debug + Clone> {
-    mat: Vec<Vec<T>>,
+    pub mat: Vec<Vec<T>>,
 }
 
 impl<T: Default + Debug + Clone> Debug for Matrix<T> {
@@ -30,5 +30,17 @@ impl<T: Debug + Default + Clone> Matrix<T> {
 
     pub fn set_at(&mut self, item: T, i: usize, j: usize) {
         self.mat[i][j] = item;
+    }
+
+    pub fn elements(&self) -> &Vec<Vec<T>> {
+        &self.mat
+    }
+}
+
+impl<T: Debug + Default + Clone> Iterator for Matrix<T> {
+    type Item = Vec<T>;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        todo!()
     }
 }
