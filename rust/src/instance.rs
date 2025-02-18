@@ -2,12 +2,12 @@ use std::{fmt::Debug, io::Read};
 
 use text_io::read;
 
-use crate::operation::{Operation, Operations};
+use crate::{matrix::Matrix, operation::Operation};
 
 pub struct Instance {
     pub num_of_jobs: usize,
     pub num_of_machines: usize,
-    pub jobs: Operations,
+    pub jobs: Matrix<Operation>,
 }
 
 impl Debug for Instance {
@@ -30,7 +30,7 @@ impl From<&str> for Instance {
         let num_of_jobs: usize = read!("{}", file);
         let num_of_machines: usize = read!("{}", file);
 
-        let mut jobs: Operations = Operations::new(num_of_jobs, num_of_machines);
+        let mut jobs = Matrix::new(num_of_jobs, num_of_machines);
 
         let mut k = 0;
         for i in 0..num_of_jobs {
