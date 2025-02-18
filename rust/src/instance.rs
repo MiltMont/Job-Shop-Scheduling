@@ -1,14 +1,23 @@
-use std::io::Read;
+use std::{fmt::Debug, io::Read};
 
 use text_io::read;
 
 use crate::operation::{Operation, Operations};
 
-#[derive(Debug)]
 pub struct Instance {
     pub num_of_jobs: usize,
     pub num_of_machines: usize,
     pub jobs: Operations,
+}
+
+impl Debug for Instance {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            "Jobs: {}, Machines: {}\n{:?}",
+            &self.num_of_jobs, &self.num_of_machines, &self.jobs
+        )
+    }
 }
 
 impl From<&str> for Instance {

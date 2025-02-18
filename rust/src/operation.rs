@@ -12,12 +12,14 @@ pub struct Operation {
 
 impl Debug for Operation {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.debug_struct("")
-            .field("j", &self.job)
-            .field("m", &self.machine)
-            .field("t", &self.time)
-            .field("s", &self.seq)
-            .finish()
+        write!(
+            f,
+            "(J{}[{}], M{}, {})",
+            &self.job + 1,
+            &self.seq + 1,
+            &self.machine + 1,
+            &self.time
+        )
     }
 }
 

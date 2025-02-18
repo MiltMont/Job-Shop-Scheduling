@@ -1,12 +1,14 @@
 use std::fmt::Debug;
 
+use crate::operation::{Operation, Operations};
+
 pub struct Matrix<T: Default + Debug + Clone> {
     pub mat: Vec<Vec<T>>,
 }
 
 impl<T: Default + Debug + Clone> Debug for Matrix<T> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.debug_struct("Matrix").field("", &self.mat).finish()
+        write!(f, "{:#?}", &self.mat)
     }
 }
 

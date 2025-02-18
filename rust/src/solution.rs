@@ -5,14 +5,16 @@ use crate::{
 
 use rand::prelude::*;
 
+/// Represents a feasible solution.
 #[derive(Debug)]
 pub struct Solution {
     pub machines: Operations,
     pub makespan: usize,
 }
 
-impl From<Instance> for Solution {
-    fn from(instance: Instance) -> Self {
+/// Obtains a feasible solution from an instance.
+impl From<&Instance> for Solution {
+    fn from(instance: &Instance) -> Self {
         let mut machines = Operations::new(instance.num_of_machines, instance.num_of_jobs);
         let makespan = usize::MAX;
 
