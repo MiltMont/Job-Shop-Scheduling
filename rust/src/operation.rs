@@ -4,7 +4,7 @@ use crate::matrix::Matrix;
 
 #[derive(Clone, Default)]
 pub struct Operation {
-    id: usize,
+    pub id: usize,
     pub job: usize,
     pub machine: usize,
     pub time: usize,
@@ -24,7 +24,7 @@ impl Debug for Operation {
     }
 }
 
-pub type Operations = Matrix<Operation>;
+pub type Operations = Matrix<Schedule>;
 
 impl Operation {
     pub fn new(id: usize, job: usize, machine: usize, time: usize, seq: usize) -> Operation {
@@ -41,15 +41,15 @@ impl Operation {
 #[derive(Debug, Default, Clone)]
 pub struct Schedule {
     // I only need a reference to an operation
-    operation: Box<Operation>,
-    seq_m: usize,
+    pub operation: Box<Operation>,
+    pub seq_m: usize,
     // Release date.
-    r: Option<usize>,
+    pub r: Option<usize>,
     // Length tail
-    q: Option<usize>,
+    pub q: Option<usize>,
 }
 
-pub type Schedules = Matrix<Schedule>;
+pub type Schedules = Vec<Schedule>;
 
 impl Schedule {
     pub fn new(
