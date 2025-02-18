@@ -1,7 +1,5 @@
 use std::fmt::Debug;
 
-use crate::operation::{Operation, Operations};
-
 pub struct Matrix<T: Default + Debug + Clone> {
     pub mat: Vec<Vec<T>>,
 }

@@ -32,11 +32,13 @@ impl From<&str> for Instance {
 
         let mut jobs: Operations = Operations::new(num_of_jobs, num_of_machines);
 
+        let mut k = 0;
         for i in 0..num_of_jobs {
             for j in 0..num_of_machines {
+                k += 1;
                 let machine: usize = read!("{}", file);
                 let time: usize = read!("{}", file);
-                jobs.set_at(Operation::new(i, machine, time, j), i, j);
+                jobs.set_at(Operation::new(k, i, machine, time, j), i, j);
             }
         }
 

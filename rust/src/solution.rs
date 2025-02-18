@@ -1,6 +1,6 @@
 use crate::{
     instance::Instance,
-    operation::{Operation, Operations},
+    operation::{Operation, Operations, Schedule, Schedules},
 };
 
 use rand::prelude::*;
@@ -8,14 +8,17 @@ use rand::prelude::*;
 /// Represents a feasible solution.
 #[derive(Debug)]
 pub struct Solution {
-    pub machines: Operations,
+    pub operations: Operations,
+    // TODO: Remove Option
+    pub scheduled_operations: Option<Schedules>,
     pub makespan: usize,
 }
 
 /// Obtains a feasible solution from an instance.
 impl From<&Instance> for Solution {
     fn from(instance: &Instance) -> Self {
-        let mut machines = Operations::new(instance.num_of_machines, instance.num_of_jobs);
+        let mut operations = Operations::new(instance.num_of_machines, instance.num_of_jobs);
+        let mut schedules = Schedules::new(instance.num_of_machines, instance.num_of_jobs);
         let makespan = usize::MAX;
 
         let mut machines_free_positions = vec![0; instance.num_of_machines];
@@ -37,8 +40,13 @@ impl From<&Instance> for Solution {
 
             // Plan this operation
             let current_free = machines_free_positions[random_op.machine];
-            machines.set_at(random_op.to_owned(), random_op.machine, current_free);
-            machines_free_positions[random_op.machine] += 1;
+            schedules.set_at(
+                Schedule::new(random_op, current_free, None, None),
+                random_op.machine,
+                current_free,
+            );
+            // machines.set_at(random_op.to_owned(), random_op.machine, current_free);
+            // machines_free_positions[random_op.machine] += 1;
 
             // If there is a following operation, replace it for the actual operation.
             if random_op.seq < instance.num_of_machines - 1 {
@@ -53,6 +61,10 @@ impl From<&Instance> for Solution {
             }
         }
 
-        Solution { machines, makespan }
+        Solution {
+            operations,
+            makespan,
+            scheduled_operations: None,
+        }
     }
 }
