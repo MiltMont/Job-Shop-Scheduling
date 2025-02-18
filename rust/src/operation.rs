@@ -1,6 +1,6 @@
 use std::fmt::Debug;
 
-use crate::matrix::Matrix;
+use crate::{matrix::Matrix, solution::Solution};
 
 #[derive(Clone, Default)]
 pub struct Operation {
@@ -64,5 +64,28 @@ impl Schedule {
             r,
             q,
         }
+    }
+
+    pub fn get_predecesor_machine(&self, solution: &Solution) -> Option<Schedule> {
+        if self.seq_m > 0 {
+            solution
+                .operations
+                .at(self.operation.machine, self.seq_m - 1)
+                .cloned()
+        } else {
+            None
+        }
+    }
+
+    pub fn get_successor_machine(&self, solution: &Solution) -> Option<Schedule> {
+        todo!()
+    }
+
+    pub fn get_predecesor_job(&self, solution: &Solution) -> Option<Schedule> {
+        todo!()
+    }
+
+    pub fn get_successor_job(&self, solution: &Solution) -> Option<Schedule> {
+        todo!()
     }
 }
