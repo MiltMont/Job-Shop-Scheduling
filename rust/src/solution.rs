@@ -1,3 +1,5 @@
+use std::fmt::Debug;
+
 use crate::{
     instance::Instance,
     operation::{Operation, Operations, Schedule, Schedules},
@@ -6,19 +8,33 @@ use crate::{
 use rand::prelude::*;
 
 /// Represents a feasible solution.
-#[derive(Debug)]
 pub struct Solution {
     pub operations: Operations,
     // TODO: Remove Option
-    pub scheduled_operations: Option<Schedules>,
+    pub scheduled_operations: Schedules,
     pub makespan: usize,
+}
+
+impl Debug for Solution {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        writeln!(f, "Generated solution: ")?;
+        for (i, row) in self.operations.mat.iter().enumerate() {
+            write!(f, "M{} [", i)?;
+            for s in row.iter() {
+                write!(f, "{}, ", s.operation.job)?;
+            }
+            writeln!(f, "]")?;
+        }
+        Ok(())
+    }
 }
 
 /// Obtains a feasible solution from an instance.
 impl From<&Instance> for Solution {
     fn from(instance: &Instance) -> Self {
         let mut operations = Operations::new(instance.num_of_machines, instance.num_of_jobs);
-        let mut schedules = Schedules::new(instance.num_of_machines, instance.num_of_jobs);
+        let mut scheduled_operations =
+            vec![Schedule::default(); instance.num_of_jobs * instance.num_of_machines + 1];
         let makespan = usize::MAX;
 
         let mut machines_free_positions = vec![0; instance.num_of_machines];
@@ -40,13 +56,18 @@ impl From<&Instance> for Solution {
 
             // Plan this operation
             let current_free = machines_free_positions[random_op.machine];
-            schedules.set_at(
+            operations.set_at(
                 Schedule::new(random_op, current_free, None, None),
                 random_op.machine,
                 current_free,
             );
-            // machines.set_at(random_op.to_owned(), random_op.machine, current_free);
-            // machines_free_positions[random_op.machine] += 1;
+            dbg!(random_op.id);
+            scheduled_operations[random_op.id] = operations
+                .at(random_op.machine, current_free)
+                .unwrap()
+                .clone();
+
+            machines_free_positions[random_op.machine] += 1;
 
             // If there is a following operation, replace it for the actual operation.
             if random_op.seq < instance.num_of_machines - 1 {
@@ -64,7 +85,7 @@ impl From<&Instance> for Solution {
         Solution {
             operations,
             makespan,
-            scheduled_operations: None,
+            scheduled_operations,
         }
     }
 }
