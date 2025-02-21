@@ -2,7 +2,7 @@ use std::fmt::Debug;
 
 use crate::{matrix::Matrix, solution::Solution};
 
-#[derive(Clone, Default)]
+#[derive(Clone, Default, PartialEq)]
 pub struct Operation {
     pub id: usize,
     // J_i: Job to which this operation belongs.
@@ -18,17 +18,23 @@ pub struct Operation {
     pub seq_m: usize,
     pub r: usize,
     pub q: usize,
+
+    // Location in solution matrix.
+    pub location: (usize, usize),
 }
 
 impl Debug for Operation {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(
             f,
-            "(J{}[{}], M{}, {})",
+            "(J{}[{}], m={}, r={}, d={}, ({}, {}))",
             &self.job + 1,
             &self.seq + 1,
-            &self.machine + 1,
-            &self.time
+            &self.machine,
+            &self.r,
+            &self.time,
+            &self.location.0,
+            &self.location.1
         )
     }
 }
@@ -46,8 +52,10 @@ impl Operation {
             seq_m: 0,
             r: 0,
             q: 0,
+            location: (0, 0),
         }
     }
+
     // PM_i in Taillard's notation.
     pub fn get_predecesor_machine(&self, solution: &Solution) -> Option<Operation> {
         if self.seq_m > 0 {
@@ -89,6 +97,62 @@ impl Operation {
             None
         }
     }
+
+    // Returns the location of the predecesor operation in the current
+    // machine.
+    // PM_i
+    pub fn get_predecesor_op_in_machine(&self) -> Option<(usize, usize)> {
+        if self.seq_m > 0 {
+            Some((self.machine, self.seq_m - 1))
+        } else {
+            None
+        }
+    }
+
+    // Returns the location of the successor operation in the current
+    // machine.
+    // SM_i
+    pub fn get_successor_op_in_machine(&self, solution: &Solution) -> Option<(usize, usize)> {
+        if self.seq_m < solution.num_of_jobs - 1 {
+            Some((self.machine, self.seq_m + 1))
+        } else {
+            None
+        }
+    }
+
+    // Return the location of the successor operation in the current job
+    // given a solution.
+    pub fn get_successor_op_in_job(&self, solution: &Solution) -> Option<(usize, usize)> {
+        if self.seq < solution.num_of_machines - 1 {
+            Some(
+                solution
+                    .scheduled_operations
+                    .get(self.id + 1)
+                    .unwrap()
+                    .location,
+            )
+        } else {
+            None
+        }
+    }
+
+    // Return the location of the predecesor operation in  the current job
+    // given a solution.
+    pub fn get_predecesor_op_in_job(&self, solution: &Solution) -> Option<(usize, usize)> {
+        if self.seq > 0 {
+            Some(
+                solution
+                    .scheduled_operations
+                    .get(self.id - 1)
+                    .unwrap()
+                    .location,
+            )
+        } else {
+            None
+        }
+    }
+
+    // Return the location
 }
 
 #[derive(Debug, Default, Clone)]

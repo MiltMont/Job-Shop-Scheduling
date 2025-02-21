@@ -1,3 +1,4 @@
+use std::cmp;
 use std::fmt::Debug;
 
 use crate::{
@@ -26,6 +27,8 @@ impl Debug for Solution {
             }
             writeln!(f, "]")?;
         }
+        writeln!(f, "makespan: {}", self.makespan)?;
+        writeln!(f, "{:?}", self.scheduled_operations)?;
         Ok(())
     }
 }
@@ -36,7 +39,7 @@ impl From<&Instance> for Solution {
         let mut operations = Operations::new(instance.num_of_machines, instance.num_of_jobs);
         let mut scheduled_operations =
             vec![Operation::default(); instance.num_of_jobs * instance.num_of_machines + 1];
-        let makespan = usize::MAX;
+        let makespan = 0;
 
         let mut machines_free_positions = vec![0; instance.num_of_machines];
         let mut availables: Vec<Operation> = operations.column(0).unwrap();
@@ -59,6 +62,8 @@ impl From<&Instance> for Solution {
             let current_free = machines_free_positions[random_op.machine];
             random_op.seq_m = current_free;
 
+            // Set location in solution
+            random_op.location = (random_op.machine, current_free);
             operations.set_at(
                 // Schedule::new(random_op, current_free, None, None),
                 random_op.clone(),
@@ -92,5 +97,101 @@ impl From<&Instance> for Solution {
             num_of_machines: instance.num_of_machines,
             num_of_jobs: instance.num_of_jobs,
         }
+    }
+}
+
+// TODO: Finish implementation
+pub fn equal_up_to_position(o1: &Operation, o2: &Operation) -> bool {
+    o1.machine == o2.machine && o1.id == o2.id && o1.job == o2.job
+}
+
+impl Solution {
+    pub fn compute_release_dates(&mut self, instance: &Instance) -> &mut Self {
+        // Stores the index of the current operation.
+        let mut availables = Vec::new();
+
+        // We find the index of the initial operations for each job.
+        for i in 0..self.num_of_jobs {
+            let op_from_current_job = instance.jobs.at(i, 0).unwrap();
+
+            if equal_up_to_position(
+                op_from_current_job,
+                self.operations.at(op_from_current_job.machine, 0).unwrap(),
+            ) {
+                availables.push((op_from_current_job.machine, 0));
+            }
+        }
+
+        dbg!(&availables);
+        while let Some((i, j)) = availables.pop() {
+            dbg!(&self.operations.at(i, j));
+            // Compute r for operation at (i,j)
+            let pred_mach = self
+                .operations
+                .at(i, j)
+                .unwrap()
+                .get_predecesor_machine(self);
+            dbg!(&pred_mach);
+            let (r_from_pred_m, t_from_pred_m) = if let Some(op) = pred_mach {
+                (op.r, op.time)
+            } else {
+                (0, 0)
+            };
+
+            let pred_job = self.operations.at(i, j).unwrap().get_predecesor_job(self);
+            dbg!(&pred_job);
+            let (r_from_pred_job, t_from_pred_job) = if let Some(op) = pred_job {
+                (op.r, op.time)
+            } else {
+                (0, 0)
+            };
+
+            // Update current operation r value
+            let mut temp = self.operations.mat[i][j].clone();
+            temp.r = cmp::max(
+                r_from_pred_m + t_from_pred_m,
+                r_from_pred_job + t_from_pred_job,
+            );
+
+            self.operations.set_at(temp, i, j);
+            // self.operations.mat[i][j].r = cmp::max(
+            //     r_from_pred_m + t_from_pred_m,
+            //     r_from_pred_job + t_from_pred_job,
+            // );
+
+            // Update makespan
+            self.makespan = cmp::max(
+                self.makespan,
+                self.operations.mat[i][j].r + self.operations.mat[i][j].time,
+            );
+
+            let successor_job = self.operations.at(i, j).unwrap().get_successor_job(self);
+
+            if let Some(op) = successor_job {
+                if op.get_predecesor_machine(self).is_none()
+                    || op.get_predecesor_machine(self).is_some_and(|o| o.r > 0)
+                {
+                    println!("Here suc_job: {:?}", &op.location);
+                    availables.push(op.location);
+                }
+            }
+
+            let successor_machine = self
+                .operations
+                .at(i, j)
+                .unwrap()
+                .get_successor_machine(self);
+
+            if let Some(op) = successor_machine {
+                if op.get_predecesor_job(self).is_none()
+                    || op.get_predecesor_job(self).is_some_and(|o| o.r > 0)
+                {
+                    println!("Here suc_mac: {:?}", &op.location);
+                    availables.push(op.location);
+                }
+            }
+            dbg!(&availables);
+        }
+        self
     }
 }
