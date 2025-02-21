@@ -24,6 +24,14 @@ impl<T: Debug + Default + Clone> Matrix<T> {
         Matrix { mat }
     }
 
+    pub fn column(&self, column_index: usize) -> Option<Vec<T>> {
+        if column_index < self.mat[0].len() {
+            Some(self.mat.iter().map(|v| v[column_index].clone()).collect())
+        } else {
+            None
+        }
+    }
+
     pub fn at(&self, i: usize, j: usize) -> Option<&T> {
         self.mat.get(i)?.get(j)
     }
