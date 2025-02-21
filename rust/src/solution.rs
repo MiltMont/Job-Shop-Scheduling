@@ -10,9 +10,10 @@ use rand::prelude::*;
 /// Represents a feasible solution.
 pub struct Solution {
     pub operations: Operations,
-    // TODO: Remove Option
     pub scheduled_operations: Schedules,
     pub makespan: usize,
+    pub num_of_jobs: usize,
+    pub num_of_machines: usize,
 }
 
 impl Debug for Solution {
@@ -21,7 +22,7 @@ impl Debug for Solution {
         for (i, row) in self.operations.mat.iter().enumerate() {
             write!(f, "M{} [", i)?;
             for s in row.iter() {
-                write!(f, "{}, ", s.operation.job)?;
+                write!(f, "{:?}, ", s.operation)?;
             }
             writeln!(f, "]")?;
         }
@@ -61,7 +62,6 @@ impl From<&Instance> for Solution {
                 random_op.machine,
                 current_free,
             );
-            dbg!(random_op.id);
             scheduled_operations[random_op.id] = operations
                 .at(random_op.machine, current_free)
                 .unwrap()
@@ -86,6 +86,8 @@ impl From<&Instance> for Solution {
             operations,
             makespan,
             scheduled_operations,
+            num_of_machines: instance.num_of_machines,
+            num_of_jobs: instance.num_of_jobs,
         }
     }
 }

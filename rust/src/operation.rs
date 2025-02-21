@@ -5,8 +5,11 @@ use crate::{matrix::Matrix, solution::Solution};
 #[derive(Clone, Default)]
 pub struct Operation {
     pub id: usize,
+    // J_i
     pub job: usize,
+    // M_i
     pub machine: usize,
+    // d_i
     pub time: usize,
     pub seq: usize,
 }
@@ -66,6 +69,7 @@ impl Schedule {
         }
     }
 
+    // PM_i in Taillard's notation.
     pub fn get_predecesor_machine(&self, solution: &Solution) -> Option<Schedule> {
         if self.seq_m > 0 {
             solution
@@ -77,15 +81,39 @@ impl Schedule {
         }
     }
 
+    // SM_i in Taillard's notation.
     pub fn get_successor_machine(&self, solution: &Solution) -> Option<Schedule> {
-        todo!()
+        if self.seq_m < solution.num_of_jobs - 1 {
+            solution
+                .operations
+                .at(self.operation.machine, self.seq_m + 1)
+                .cloned()
+        } else {
+            None
+        }
     }
 
+    // PJ_i in Taillard's notation.
     pub fn get_predecesor_job(&self, solution: &Solution) -> Option<Schedule> {
-        todo!()
+        if self.operation.seq > 0 {
+            solution
+                .scheduled_operations
+                .get(self.operation.id - 1)
+                .cloned()
+        } else {
+            None
+        }
     }
 
+    // SJ_i in Taillard's notation.
     pub fn get_successor_job(&self, solution: &Solution) -> Option<Schedule> {
-        todo!()
+        if self.operation.seq < solution.num_of_machines - 1 {
+            solution
+                .scheduled_operations
+                .get(self.operation.id + 1)
+                .cloned()
+        } else {
+            None
+        }
     }
 }
