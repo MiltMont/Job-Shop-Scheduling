@@ -42,6 +42,13 @@ impl Debug for Operation {
 pub type Operations = Matrix<Operation>;
 
 impl Operation {
+    pub fn equal_up_to_position(&self, o2: &Operation) -> bool {
+        self.machine == o2.machine
+            && self.id == o2.id
+            && self.job == o2.job
+            && self.time == o2.time
+            && self.seq == o2.seq
+    }
     pub fn new(id: usize, job: usize, machine: usize, time: usize, seq: usize) -> Operation {
         Operation {
             id,

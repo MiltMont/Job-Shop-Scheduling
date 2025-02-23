@@ -101,11 +101,6 @@ impl From<&Instance> for Solution {
     }
 }
 
-// TODO: Finish implementation
-pub fn equal_up_to_position(o1: &Operation, o2: &Operation) -> bool {
-    o1.machine == o2.machine && o1.id == o2.id && o1.job == o2.job
-}
-
 impl Solution {
     pub fn compute_release_dates(&mut self, instance: &Instance) -> &mut Self {
         // Stores the index of the current operation.
@@ -116,10 +111,9 @@ impl Solution {
         for i in 0..self.num_of_jobs {
             let op_from_current_job = instance.jobs.at(i, 0).unwrap();
 
-            if equal_up_to_position(
-                op_from_current_job,
-                self.operations.at(op_from_current_job.machine, 0).unwrap(),
-            ) {
+            if op_from_current_job
+                .equal_up_to_position(self.operations.at(op_from_current_job.machine, 0).unwrap())
+            {
                 availables.push((op_from_current_job.machine, 0));
             }
         }
