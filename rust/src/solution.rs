@@ -1,5 +1,5 @@
-use std::cmp;
 use std::fmt::Debug;
+use std::{cmp, collections::HashSet};
 
 use crate::{
     instance::Instance,
@@ -11,6 +11,7 @@ use rand::prelude::*;
 /// Represents a feasible solution.
 pub struct Solution {
     pub operations: Operations,
+    // TODO: Do we need this field?
     pub scheduled_operations: Vec<Operation>,
     pub makespan: usize,
     pub num_of_jobs: usize,
@@ -109,6 +110,7 @@ impl Solution {
     pub fn compute_release_dates(&mut self, instance: &Instance) -> &mut Self {
         // Stores the index of the current operation.
         let mut availables = Vec::new();
+        let mut visited = HashSet::new();
 
         // We find the index of the initial operations for each job.
         for i in 0..self.num_of_jobs {
@@ -122,16 +124,15 @@ impl Solution {
             }
         }
 
-        dbg!(&availables);
         while let Some((i, j)) = availables.pop() {
-            dbg!(&self.operations.at(i, j));
+            visited.insert((i, j));
             // Compute r for operation at (i,j)
             let pred_mach = self
                 .operations
                 .at(i, j)
                 .unwrap()
                 .get_predecesor_machine(self);
-            dbg!(&pred_mach);
+
             let (r_from_pred_m, t_from_pred_m) = if let Some(op) = pred_mach {
                 (op.r, op.time)
             } else {
@@ -139,7 +140,6 @@ impl Solution {
             };
 
             let pred_job = self.operations.at(i, j).unwrap().get_predecesor_job(self);
-            dbg!(&pred_job);
             let (r_from_pred_job, t_from_pred_job) = if let Some(op) = pred_job {
                 (op.r, op.time)
             } else {
@@ -147,17 +147,13 @@ impl Solution {
             };
 
             // Update current operation r value
-            let mut temp = self.operations.mat[i][j].clone();
-            temp.r = cmp::max(
+            self.operations.mat[i][j].r = cmp::max(
                 r_from_pred_m + t_from_pred_m,
                 r_from_pred_job + t_from_pred_job,
             );
-
-            self.operations.set_at(temp, i, j);
-            // self.operations.mat[i][j].r = cmp::max(
-            //     r_from_pred_m + t_from_pred_m,
-            //     r_from_pred_job + t_from_pred_job,
-            // );
+            // TODO: Do we need this array?
+            self.scheduled_operations[self.operations.at(i, j).unwrap().id].r =
+                self.operations.mat[i][j].r;
 
             // Update makespan
             self.makespan = cmp::max(
@@ -166,12 +162,12 @@ impl Solution {
             );
 
             let successor_job = self.operations.at(i, j).unwrap().get_successor_job(self);
-
             if let Some(op) = successor_job {
                 if op.get_predecesor_machine(self).is_none()
-                    || op.get_predecesor_machine(self).is_some_and(|o| o.r > 0)
+                    || op
+                        .get_predecesor_machine(self)
+                        .is_some_and(|o| visited.contains(&o.location))
                 {
-                    println!("Here suc_job: {:?}", &op.location);
                     availables.push(op.location);
                 }
             }
@@ -184,13 +180,13 @@ impl Solution {
 
             if let Some(op) = successor_machine {
                 if op.get_predecesor_job(self).is_none()
-                    || op.get_predecesor_job(self).is_some_and(|o| o.r > 0)
+                    || op
+                        .get_predecesor_job(self)
+                        .is_some_and(|o| visited.contains(&o.location))
                 {
-                    println!("Here suc_mac: {:?}", &op.location);
                     availables.push(op.location);
                 }
             }
-            dbg!(&availables);
         }
         self
     }
