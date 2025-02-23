@@ -27,14 +27,12 @@ impl Debug for Operation {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(
             f,
-            "(J{}[{}], m={}, r={}, d={}, ({}, {}))",
+            "(J{}[{}], m={}, r={}, d={})",
             &self.job + 1,
             &self.seq + 1,
             &self.machine,
             &self.r,
             &self.time,
-            &self.location.0,
-            &self.location.1
         )
     }
 }
