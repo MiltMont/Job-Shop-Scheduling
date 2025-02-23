@@ -38,7 +38,7 @@ impl From<&str> for Instance {
                 k += 1;
                 let machine: usize = read!("{}", file);
                 let time: usize = read!("{}", file);
-                jobs.set_at(Operation::new(k, i, machine, time, j), i, j);
+                jobs.set_at(Operation::new(k - 1, i, machine, time, j), i, j);
             }
         }
 

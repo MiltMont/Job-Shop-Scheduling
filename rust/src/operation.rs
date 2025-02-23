@@ -14,9 +14,13 @@ pub struct Operation {
     // Index in the sequence of operations in J_i
     pub seq: usize,
 
-    // This will be initially zero.
+    //
+    // These will be initially zero.
+    //
     pub seq_m: usize,
+    // Release time: Earliest beginning time of the operation.
     pub r: usize,
+    // Length of the tail: Longest path from the operation to the end.
     pub q: usize,
 
     // Location in solution matrix.
@@ -27,11 +31,12 @@ impl Debug for Operation {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(
             f,
-            "(J{}[{}], m={}, r={}, d={})",
+            "(J{}[{}], m={}, r={}, q={}, d={})",
             &self.job + 1,
             &self.seq + 1,
             &self.machine,
             &self.r,
+            &self.q,
             &self.time,
         )
     }
@@ -158,33 +163,4 @@ impl Operation {
     }
 
     // Return the location
-}
-
-#[derive(Debug, Default, Clone)]
-pub struct Schedule {
-    // I only need a reference to an operation
-    pub operation: Box<Operation>,
-    pub seq_m: usize,
-    // Release date.
-    pub r: Option<usize>,
-    // Length tail
-    pub q: Option<usize>,
-}
-
-pub type Schedules = Vec<Schedule>;
-
-impl Schedule {
-    pub fn new(
-        operation: &Operation,
-        seq_m: usize,
-        r: Option<usize>,
-        q: Option<usize>,
-    ) -> Schedule {
-        Schedule {
-            operation: Box::new(operation.clone()),
-            seq_m,
-            r,
-            q,
-        }
-    }
 }

@@ -39,7 +39,7 @@ impl From<&Instance> for Solution {
     fn from(instance: &Instance) -> Self {
         let mut operations = Operations::new(instance.num_of_machines, instance.num_of_jobs);
         let mut scheduled_operations =
-            vec![Operation::default(); instance.num_of_jobs * instance.num_of_machines + 1];
+            vec![Operation::default(); instance.num_of_jobs * instance.num_of_machines];
         let makespan = 0;
 
         let mut machines_free_positions = vec![0; instance.num_of_machines];
@@ -91,19 +91,23 @@ impl From<&Instance> for Solution {
             }
         }
 
-        Solution {
+        let mut solution = Solution {
             operations,
             makespan,
             scheduled_operations,
             num_of_machines: instance.num_of_machines,
             num_of_jobs: instance.num_of_jobs,
-        }
+        };
+
+        solution
+            .compute_release_dates(instance)
+            .compute_length_tails(instance);
+        solution
     }
 }
 
 impl Solution {
     pub fn compute_release_dates(&mut self, instance: &Instance) -> &mut Self {
-        // Stores the index of the current operation.
         let mut availables = Vec::new();
         let mut visited = HashSet::new();
 
@@ -177,6 +181,82 @@ impl Solution {
                     || op
                         .get_predecesor_job(self)
                         .is_some_and(|o| visited.contains(&o.location))
+                {
+                    availables.push(op.location);
+                }
+            }
+        }
+        self
+    }
+
+    pub fn compute_length_tails(&mut self, instance: &Instance) -> &mut Self {
+        let mut availables: Vec<(usize, usize)> = Vec::new();
+        let mut visited: HashSet<(usize, usize)> = HashSet::new();
+
+        for i in 0..self.num_of_jobs {
+            let op_from_current_job = instance.jobs.mat[i].last().unwrap();
+
+            if op_from_current_job.equal_up_to_position(
+                self.operations.mat[op_from_current_job.machine]
+                    .last()
+                    .unwrap(),
+            ) {
+                availables.push((op_from_current_job.machine, self.num_of_jobs - 1));
+            }
+        }
+
+        while let Some((i, j)) = availables.pop() {
+            visited.insert((i, j));
+            //let successor_machine = self
+            //    .operations
+            //    .at(i, j)
+            //    .unwrap()
+            //    .get_successor_machine(&self);
+            //let successor_job = self.operations.at(i, j).unwrap().get_successor_job(&self);
+
+            let q_successor_machine = if let Some(op) = self
+                .operations
+                .at(i, j)
+                .unwrap()
+                .get_successor_machine(self)
+            {
+                op.q
+            } else {
+                0
+            };
+
+            let q_successor_job =
+                if let Some(op) = self.operations.at(i, j).unwrap().get_successor_job(self) {
+                    op.q
+                } else {
+                    0
+                };
+
+            self.operations.mat[i][j].q =
+                cmp::max(q_successor_machine, q_successor_job) + self.operations.mat[i][j].time;
+            self.scheduled_operations[self.operations.at(i, j).unwrap().id].q =
+                self.operations.mat[i][j].q;
+
+            if let Some(op) = self.operations.at(i, j).unwrap().get_predecesor_job(self) {
+                if op.get_successor_machine(self).is_none()
+                    || op
+                        .get_successor_machine(self)
+                        .is_some_and(|op| visited.contains(&op.location))
+                {
+                    availables.push(op.location);
+                }
+            }
+
+            if let Some(op) = self
+                .operations
+                .at(i, j)
+                .unwrap()
+                .get_predecesor_machine(self)
+            {
+                if op.get_successor_job(self).is_none()
+                    || op
+                        .get_successor_job(self)
+                        .is_some_and(|op| visited.contains(&op.location))
                 {
                     availables.push(op.location);
                 }
