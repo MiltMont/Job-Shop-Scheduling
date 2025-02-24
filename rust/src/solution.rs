@@ -114,44 +114,39 @@ impl Solution {
         let mut visited = HashSet::new();
 
         // We find the index of the initial operations for each job.
-        for i in 0..self.num_of_jobs {
-            let op_from_current_job = instance.jobs.at(i, 0).unwrap();
-
-            if op_from_current_job
-                .equal_up_to_position(self.operations.at(op_from_current_job.machine, 0).unwrap())
-            {
-                availables.push((op_from_current_job.machine, 0));
+        instance.jobs.mat.iter().for_each(|job| {
+            if job[0].equal_up_to_position(self.operations.at(job[0].machine, 0).unwrap()) {
+                availables.push((job[0].machine, 0));
             }
-        }
+        });
 
         while let Some((i, j)) = availables.pop() {
             visited.insert((i, j));
+
             // Compute r for operation at (i,j)
-            let pred_mach = self
+            let (r_from_pred_m, t_from_pred_m) = if let Some(op) = self
                 .operations
                 .at(i, j)
                 .unwrap()
-                .get_predecesor_machine(self);
-
-            let (r_from_pred_m, t_from_pred_m) = if let Some(op) = pred_mach {
+                .get_predecesor_machine(self)
+            {
                 (op.r, op.time)
             } else {
                 (0, 0)
             };
 
-            let pred_job = self.operations.at(i, j).unwrap().get_predecesor_job(self);
-            let (r_from_pred_job, t_from_pred_job) = if let Some(op) = pred_job {
-                (op.r, op.time)
-            } else {
-                (0, 0)
-            };
+            let (r_from_pred_job, t_from_pred_job) =
+                if let Some(op) = self.operations.at(i, j).unwrap().get_predecesor_job(self) {
+                    (op.r, op.time)
+                } else {
+                    (0, 0)
+                };
 
             // Update current operation r value
             self.operations.mat[i][j].r = cmp::max(
                 r_from_pred_m + t_from_pred_m,
                 r_from_pred_job + t_from_pred_job,
             );
-            // TODO: Do we need this array?
             self.scheduled_operations[self.operations.at(i, j).unwrap().id].r =
                 self.operations.mat[i][j].r;
 
@@ -195,26 +190,16 @@ impl Solution {
         let mut availables: Vec<(usize, usize)> = Vec::new();
         let mut visited: HashSet<(usize, usize)> = HashSet::new();
 
-        for i in 0..self.num_of_jobs {
-            let op_from_current_job = instance.jobs.mat[i].last().unwrap();
-
-            if op_from_current_job.equal_up_to_position(
-                self.operations.mat[op_from_current_job.machine]
-                    .last()
-                    .unwrap(),
-            ) {
-                availables.push((op_from_current_job.machine, self.num_of_jobs - 1));
+        instance.jobs.mat.iter().for_each(|job| {
+            if job.last().is_some_and(|op| {
+                op.equal_up_to_position(self.operations.mat[op.machine].last().unwrap())
+            }) {
+                availables.push((job.last().unwrap().machine, self.num_of_jobs - 1));
             }
-        }
+        });
 
         while let Some((i, j)) = availables.pop() {
             visited.insert((i, j));
-            //let successor_machine = self
-            //    .operations
-            //    .at(i, j)
-            //    .unwrap()
-            //    .get_successor_machine(&self);
-            //let successor_job = self.operations.at(i, j).unwrap().get_successor_job(&self);
 
             let q_successor_machine = if let Some(op) = self
                 .operations
