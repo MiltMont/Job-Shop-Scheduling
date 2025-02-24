@@ -43,12 +43,14 @@ impl From<&Instance> for Solution {
         let makespan = 0;
 
         let mut machines_free_positions = vec![0; instance.num_of_machines];
-        let mut availables: Vec<Operation> = operations.column(0).unwrap();
+        let mut availables: Vec<Operation> = Vec::new();
 
         // Availables is the first row of the operations matrix.
-        instance.jobs.mat.iter().enumerate().for_each(|(i, j)| {
-            availables[i] = j[0].clone();
-        });
+        instance
+            .jobs
+            .mat
+            .iter()
+            .for_each(|job| availables.push(job[0].clone()));
 
         let mut rng = rand::rng();
         let mut total_availables = instance.num_of_jobs;
