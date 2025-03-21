@@ -1,4 +1,4 @@
-use std::{fmt::Debug, io::Read};
+use std::{fmt::Debug, fs::File, io::Read, path::PathBuf};
 
 use text_io::read;
 
@@ -20,12 +20,9 @@ impl Debug for Instance {
     }
 }
 
-impl From<&str> for Instance {
-    fn from(filename: &str) -> Self {
-        let mut file = std::fs::File::open(filename)
-            .unwrap()
-            .bytes()
-            .map(|c| c.unwrap());
+impl From<PathBuf> for Instance {
+    fn from(value: PathBuf) -> Self {
+        let mut file = File::open(value).unwrap().bytes().map(|c| c.unwrap());
 
         let num_of_jobs: usize = read!("{}", file);
         let num_of_machines: usize = read!("{}", file);
