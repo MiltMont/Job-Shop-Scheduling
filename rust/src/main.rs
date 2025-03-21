@@ -1,12 +1,24 @@
-use rust::{instance::Instance, neighbor::Neighborhood, solution::Solution};
+use clap::Parser;
+use rust::{cli::CliArgs, errors::FileError, instance::Instance, solution::Solution};
 
-fn main() {
-    let instance = Instance::from("../instances/abz5.txt");
-    let solution = Solution::from(&instance);
-    //let t = solution.compute_release_dates(&instance);
-    //
-    let v = Neighborhood::from(&solution);
-    println!("{:?}", solution);
-    println!("{v:?}");
-    // println!("{instance:?}");
+fn main() -> miette::Result<()> {
+    let args = CliArgs::parse();
+
+    if args.file.exists() {
+        let instance = Instance::from(args.file);
+
+        if args.display_instance {
+            println!("{:?}", &instance);
+        }
+
+        let solution = Solution::from(&instance);
+
+        if args.display_solution {
+            println!("{:?}", solution);
+        }
+
+        Ok(())
+    } else {
+        Err(FileError { src: args.file })?
+    }
 }
