@@ -30,7 +30,8 @@ the operation taking into account its origin. Then, a feasible solution is an or
 We call the length of the longest path from $0$ to $N+1$ the make span, $C_{\max}$, of this graph.
 
 ## Graph representation (The `Solution` class)
-// TODO
+We construct an orientation of the aforementioned graph as detailed in [?] and store it in an $m \times n$ matrix in such a way that 
+row $i$ contains the scheduled oeprations for machine $M_i$.
 
 ## The neighborhood of a solution
 
